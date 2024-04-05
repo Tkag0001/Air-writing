@@ -2,7 +2,7 @@
 This project is built on [hand-gesture-recognition-using-mediapipe](https://github.com/kinivi/hand-gesture-recognition-mediapipe).<br> This is a sample 
 program that recognizes hand signs, finger gestures and handwritten characters with a simple MLP using the detected key points and simple CNN to recognize character.
 
-![demo](https://github.com/Tkag0001/Air-writing/assets/107709392/41fc1c69-6c2e-45e8-aa30-4848267898ac)
+![demo](https://github.com/Tkag0001/Air-writing/assets/107709392/41fc1c69-6c2e-45e8-aa30-4848267898ac)<br>
 This repository contains the following contents.
 * Sample program
 * Hand sign recognition model(TFLite)
