@@ -7,6 +7,9 @@ import itertools
 from collections import Counter
 from collections import deque
 
+import cv2
+import pytesseract
+
 import cv2 as cv
 import numpy as np
 import mediapipe as mp
@@ -14,14 +17,20 @@ import mediapipe as mp
 from utils import CvFpsCalc
 from model import KeyPointClassifier
 from model import PointHistoryClassifier
+from model import HandwrittenClassifier
+def new_board(image_width, image_height):
+    board = np.zeros((image_height, image_width), dtype=np.uint8)
+    return board
 
-
+def resize_image(img, new_shape):
+    res = cv.resize(img, new_shape, interpolation=cv.INTER_AREA)
+    return res
 def get_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--device", type=int, default=0)
-    parser.add_argument("--width", help='cap width', type=int, default=960)
-    parser.add_argument("--height", help='cap height', type=int, default=540)
+    parser.add_argument("--width", help='cap width', type=int, default=640)
+    parser.add_argument("--height", help='cap height', type=int, default=480)
 
     parser.add_argument('--use_static_image_mode', action='store_true')
     parser.add_argument("--min_detection_confidence",
@@ -44,8 +53,9 @@ def main():
 
     cap_device = args.device
     cap_width = args.width
+    # cap_width = 1280
     cap_height = args.height
-
+    # cap_height = 720
     use_static_image_mode = args.use_static_image_mode
     min_detection_confidence = args.min_detection_confidence
     min_tracking_confidence = args.min_tracking_confidence
@@ -70,6 +80,8 @@ def main():
 
     point_history_classifier = PointHistoryClassifier()
 
+    handwritten_classifier = HandwrittenClassifier()
+
     # Read labels ###########################################################
     with open('model/keypoint_classifier/keypoint_classifier_label.csv',
               encoding='utf-8-sig') as f:
@@ -77,14 +89,18 @@ def main():
         keypoint_classifier_labels = [
             row[0] for row in keypoint_classifier_labels
         ]
-    with open(
-            'model/point_history_classifier/point_history_classifier_label.csv',
+    with open('model/point_history_classifier/point_history_classifier_label.csv',
             encoding='utf-8-sig') as f:
         point_history_classifier_labels = csv.reader(f)
         point_history_classifier_labels = [
             row[0] for row in point_history_classifier_labels
         ]
-
+    with open('model/handwritten_classifier/handwritten_classifier_label.csv',
+            encoding='utf-8-sig') as f:
+        handwritten_classifier_labels = csv.reader(f)
+        handwritten_classifier_labels = [
+            row[0] for row in handwritten_classifier_labels
+        ]
     # FPS Measurement ########################################################
     cvFpsCalc = CvFpsCalc(buffer_len=10)
 
@@ -98,6 +114,13 @@ def main():
     #  ########################################################################
     mode = 0
 
+    #Board to classificate handwritten alphabet
+    board = new_board(args.width, args.height)
+    previous_state = 0
+
+    #Point to draw line
+    start_point = None
+    predicted_character = 'None'
     while True:
         fps = cvFpsCalc.get()
 
@@ -116,12 +139,18 @@ def main():
 
         # Detection implementation #############################################################
         image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
-
         image.flags.writeable = False
         results = hands.process(image)
         image.flags.writeable = True
 
-        #  ####################################################################
+        # Draw bounding box for character and crop character to a new image
+        board2view, point1_to_crop, point2_to_crop = draw_bounding_box_character(board)
+        board_cropped = board[point1_to_crop[1]: point2_to_crop[1],
+                        point1_to_crop[0]: point2_to_crop[0]]
+        img2predict = resize_image(board_cropped, (28, 28))
+        # cv.imshow("resize board", resize_board)
+
+        # check if machine can detect hand
         if results.multi_hand_landmarks is not None:
             for hand_landmarks, handedness in zip(results.multi_hand_landmarks,
                                                   results.multi_handedness):
@@ -141,10 +170,35 @@ def main():
 
                 # Hand sign classification
                 hand_sign_id = keypoint_classifier(pre_processed_landmark_list)
-                if hand_sign_id == 2:  # Point gesture
+                predicted_character = handwritten_classifier_labels[handwritten_classifier(img2predict)]
+
+                if hand_sign_id == 4:  # Point gesture
+                    previous_state = hand_sign_id
+                    end_point = landmark_list[8]
+                    # board = cv.circle(board, landmark_list[8], 10, 255, -1)
+                    if(start_point != None):
+                        board = cv.line(board, start_point, end_point, 255, 15)
+                    start_point = end_point
                     point_history.append(landmark_list[8])
-                else:
-                    point_history.append([0, 0])
+                elif hand_sign_id != previous_state:
+                    previous_state = hand_sign_id
+                    if hand_sign_id == 0:
+                        print('stop')
+                    elif hand_sign_id == 1:
+                        print('cut')
+                        # Recognize character
+                        # predicted_character = handwritten_classifier_labels[handwritten_classifier(resize_board)]
+                        # character = pytesseract.image_to_string(board)
+                        print("Predicted character : %s" %predicted_character)
+                    elif hand_sign_id == 2:
+                        print('space')
+                    else:
+                        print('delete')
+                        board = new_board(args.width, args.height)
+                        predicted_character = 'None'
+                    start_point = None
+                point_history.append([0, 0])
+
 
                 # Finger gesture classification
                 finger_gesture_id = 0
@@ -175,7 +229,15 @@ def main():
         debug_image = draw_info(debug_image, fps, mode, number)
 
         # Screen reflection #############################################################
-        cv.imshow('Hand Gesture Recognition', debug_image)
+        board_resized = cv.resize(board2view, (debug_image.shape[1], debug_image.shape[0]))
+        board_resized = cv.cvtColor(board_resized, cv.COLOR_GRAY2BGR)
+
+        display_camera = cv.add(debug_image, board_resized) #merge 2 images
+        frame = np.concatenate((board_resized, display_camera), axis=1)
+        frame = draw_predicted_character(frame, predicted_character)
+        cv.imshow('Output', frame)
+        # cv.imshow('Board', board)
+        # cv.imshow('board 28x28', resize_board)
 
     cap.release()
     cv.destroyAllWindows()
@@ -282,7 +344,7 @@ def logging_csv(number, mode, landmark_list, point_history_list):
     if mode == 0:
         pass
     if mode == 1 and (0 <= number <= 9):
-        csv_path = 'model/keypoint_classifier/keypoint.csv'
+        csv_path = 'model/keypoint_classifier/keypoint_v3.csv'
         with open(csv_path, 'a', newline="") as f:
             writer = csv.writer(f)
             writer.writerow([number, *landmark_list])
@@ -538,6 +600,42 @@ def draw_info(image, fps, mode, number):
                        cv.LINE_AA)
     return image
 
+def draw_predicted_character(image, predicted_character):
+    cv.putText(image, "Predicted character: " + predicted_character, (10, 30),
+               cv.FONT_HERSHEY_SIMPLEX, 1.0, (255,255,255), 1,
+               cv.LINE_AA)
+    return image
 
+def draw_bounding_box_character(img):
+    contours, _ = cv.findContours(img, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+    img2find = img.copy()   #prevent drawing on original image
+    res = img2find
+    if(len(contours)!=0):
+        cnt = contours[0]
+        x,y,w,h = cv2.boundingRect(cnt)
+        # image_size = w if w > h else h  #Draw a square
+        point1 = [x,y]
+        point2 = [x + w,y + h]
+        coordinate_difference = abs((h - w)//2)
+        if(w < h):
+            if(x - coordinate_difference < 0): coordinate_difference = x
+            point1 = [x-coordinate_difference, y]
+            point2 = [x+w+(h-w)-coordinate_difference, y+h]
+        else:
+            if(y - coordinate_difference < 0): coordinate_difference = y
+            point1 = [x, y-coordinate_difference]
+            point2 = [x+w, y+h+(w-h)-coordinate_difference]
+
+        #You can remove conditions, I use it to fit the data in handwritten_classifier
+        if (point1[0] - 10 > 0): point1[0] = point1[0] - 10
+        if (point1[1] - 10 > 0): point1[1] = point1[1] - 10
+        if (point2[0] + 10 < res.shape[0]): point2[0] = point2[0] + 10
+        if (point2[1] + 10 < res.shape[1]): point2[1] = point2[1] + 10
+
+        # print("After: ", point1, point2)
+
+        res = cv.rectangle(img2find, point1, point2, (255,255,255), 2)
+        return res, point1, point2
+    return res, [0,0], [img.shape[0], img.shape[1]]
 if __name__ == '__main__':
     main()
