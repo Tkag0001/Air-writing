@@ -7,7 +7,7 @@ import tensorflow as tf
 class HandwrittenClassifier(object):
     def __init__(
         self,
-        model_path='model/handwritten_classifier/handwritten_classifier.tflite',
+        model_path='model/handwritten_classifier/handwritten_classifier_v2.tflite',
         num_threads=1,
     ):
         self.interpreter = tf.lite.Interpreter(model_path=model_path,
