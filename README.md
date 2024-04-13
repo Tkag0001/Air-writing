@@ -1,14 +1,16 @@
 # Air-writting
 This project is built on [hand-gesture-recognition-using-mediapipe](https://github.com/kinivi/hand-gesture-recognition-mediapipe).<br> This is a sample 
-program that recognizes hand signs, finger gestures and handwritten characters with a simple MLP using the detected key points and simple CNN to recognize character.
+program that recognizes hand signs, finger gestures and handwritten characters with a simple MLP using the detected key points and simple CNN.
 
 ![demo](https://github.com/Tkag0001/Air-writing/assets/107709392/41fc1c69-6c2e-45e8-aa30-4848267898ac)<br>
 This repository contains the following contents.
 * Sample program
 * Hand sign recognition model(TFLite)
 * Finger gesture recognition model(TFLite)
+* Handwritten character recognition(TFLite)
 * Learning data for hand sign recognition and notebook for learning
 * Learning data for finger gesture recognition and notebook for learning
+* Learning data for handwritten character recognition and notebook for learning
 
 # Requirements
 * mediapipe 0.8.1
@@ -34,26 +36,54 @@ Detection confidence threshold (Default：0.5)
 Tracking confidence threshold (Default：0.5)
 
 # Directory
+
 <pre>
-│  app.py
-│  keypoint_classification.ipynb
-│  point_history_classification.ipynb
-│  
+│   .gitignore
+│   agument_image.py
+│   app.py
+│   check_data_train.ipynb
+│   create_train_data.py
+│   demo.gif
+│   keypoint_classification.ipynb
+│   keypoint_classification_EN.ipynb
+│   LICENSE
+│   point_history_classification.ipynb
+│   README.md
+│
+├─data
+│
 ├─model
-│  ├─keypoint_classifier
-│  │  │  keypoint.csv
-│  │  │  keypoint_classifier.hdf5
-│  │  │  keypoint_classifier.py
-│  │  │  keypoint_classifier.tflite
-│  │  └─ keypoint_classifier_label.csv
-│  │          
-│  └─point_history_classifier
-│      │  point_history.csv
-│      │  point_history_classifier.hdf5
-│      │  point_history_classifier.py
-│      │  point_history_classifier.tflite
-│      └─ point_history_classifier_label.csv
-│          
+│   ├─handwritten_classifier
+│   │   │   handwritten_classifier.hdf5
+│   │   │   handwritten_classifier.keras
+│   │   │   handwritten_classifier.py
+│   │   │   handwritten_classifier.tflite
+│   │   └─   handwritten_classifier_label.csv
+│   │           
+│   ├─keypoint_classifier
+│   │   │   keypoint.csv
+│   │   │   keypoint_classifier.hdf5
+│   │   │   keypoint_classifier.keras
+│   │   │   keypoint_classifier.py
+│   │   │   keypoint_classifier.tflite
+│   │   │   keypoint_classifier_label.csv
+│   │   │   keypoint_classifier_v2.hdf5
+│   │   │   keypoint_classifier_v2.tflite
+│   │   │   keypoint_classifier_v3.hdf5
+│   │   │   keypoint_classifier_v3.tflite
+│   │   │   keypoint_classifier_v4.hdf5
+│   │   │   keypoint_classifier_v4.tflite
+│   │   │   keypoint_v2.csv
+│   │   │   keypoint_v3.csv
+│   │   └─   keypoint_v4.csv
+│   │           
+│   └─point_history_classifier
+│       │   point_history.csv
+│       │   point_history_classifier.hdf5
+│       │   point_history_classifier.py
+│       │   point_history_classifier.tflite
+│       └─  point_history_classifier_label.csv
+│           
 └─utils
     └─cvfpscalc.py
 </pre>
@@ -61,6 +91,9 @@ Tracking confidence threshold (Default：0.5)
 This is a sample program for inference.<br>
 In addition, learning data (key points) for hand sign recognition,<br>
 You can also collect training data (index finger coordinate history) for finger gesture recognition.
+
+### handwritten_classifier.ipynb
+This is model training script for handwritten character recognition.
 
 ### keypoint_classification.ipynb
 This is a model training script for hand sign recognition.
