@@ -203,7 +203,7 @@ def logging_csv(number, mode, landmark_list):
     if mode == 0:
         pass
     if mode == 1:
-        csv_path = 'model/keypoint_classifier/keypoint_v3.csv'
+        csv_path = 'model/keypoint_classifier/keypoint_v4.csv'
         with open(csv_path, 'a', newline="") as f:
             writer = csv.writer(f)
             writer.writerow([number, *landmark_list])
