@@ -21,8 +21,9 @@ def main():
     index = 0
     min_angle = -45
     max_angle = 45
+    list_data = ['L', 'Z', 'B', 'S', 'V']
     for dir in dirs:
-        if dir not in ['L', 'Z', 'B', 'S', 'V']: continue
+        if dir not in list_data: continue
         folder_output = os.path.join(output_path, dir)
         os.makedirs(folder_output, exist_ok= True)
 
@@ -30,7 +31,6 @@ def main():
         fold = os.path.join(input_path, dir)
         imgs = os.listdir(fold)
         for img in imgs:
-
             index = index + 1
             img_path = os.path.join(fold, img)
             image = cv.imread(img_path)
