@@ -4,11 +4,10 @@ import csv
 import copy
 import argparse
 import itertools
+import os
 from collections import Counter
 from collections import deque
-
-import cv2
-import pytesseract
+import re
 
 import cv2 as cv
 import numpy as np
@@ -59,6 +58,14 @@ def main():
     use_static_image_mode = args.use_static_image_mode
     min_detection_confidence = args.min_detection_confidence
     min_tracking_confidence = args.min_tracking_confidence
+
+
+    custom_data_path = 'data/custom_data_Air_writing'
+    custom_img = os.listdir(custom_data_path)
+    next_index_img = 0
+    if (len(custom_img)):
+        last_img = max(custom_img)
+        next_index_img = int(re.search(r'(\d+)', last_img).group(1))+1
 
     use_brect = True
 
@@ -130,6 +137,9 @@ def main():
             break
         number, mode = select_mode(key, mode)
 
+        if key == 115:
+            cv.imwrite(os.path.join(custom_data_path, 'i%s.jpg' % next_index_img), board)
+            next_index_img += 1
         # Camera capture #####################################################
         ret, image = cap.read()
         if not ret:
@@ -177,7 +187,7 @@ def main():
                     end_point = landmark_list[8]
                     # board = cv.circle(board, landmark_list[8], 10, 255, -1)
                     if(start_point != None):
-                        board = cv.line(board, start_point, end_point, 255, 15)
+                        board = cv.line(board, start_point, end_point, 255, 10)
                     start_point = end_point
                     point_history.append(landmark_list[8])
                 elif hand_sign_id != previous_state:
@@ -612,7 +622,7 @@ def draw_bounding_box_character(img):
     res = img2find
     if(len(contours)!=0):
         cnt = contours[0]
-        x,y,w,h = cv2.boundingRect(cnt)
+        x,y,w,h = cv.boundingRect(cnt)
         # image_size = w if w > h else h  #Draw a square
         point1 = [x,y]
         point2 = [x + w,y + h]
