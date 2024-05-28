@@ -39,42 +39,33 @@ Tracking confidence threshold (Default：0.5)
 
 <pre>
 │   .gitignore
-│   agument_image.py
 │   app.py
-│   check_data_train.ipynb
-│   create_train_data.py
 │   demo.gif
+│   check_data_train.ipynb
+│   agument_image_for_keypoint_classification.py
+│   create_train_data_for_keypoint_classification_from_image.py
 │   keypoint_classification.ipynb
 │   keypoint_classification_EN.ipynb
-│   LICENSE
+│   character-recognition.ipynb
 │   point_history_classification.ipynb
+│   LICENSE
 │   README.md
-│
 ├─data
 │
 ├─model
 │   ├─handwritten_classifier
-│   │   │   handwritten_classifier.hdf5
-│   │   │   handwritten_classifier.keras
+│   │   │   handwritten_classifier_v2.hdf5
+│   │   │   handwritten_classifier_v2.keras
 │   │   │   handwritten_classifier.py
-│   │   │   handwritten_classifier.tflite
+│   │   │   handwritten_classifier_v2.tflite
 │   │   └─   handwritten_classifier_label.csv
 │   │           
 │   ├─keypoint_classifier
 │   │   │   keypoint.csv
-│   │   │   keypoint_classifier.hdf5
-│   │   │   keypoint_classifier.keras
 │   │   │   keypoint_classifier.py
-│   │   │   keypoint_classifier.tflite
 │   │   │   keypoint_classifier_label.csv
-│   │   │   keypoint_classifier_v2.hdf5
-│   │   │   keypoint_classifier_v2.tflite
-│   │   │   keypoint_classifier_v3.hdf5
-│   │   │   keypoint_classifier_v3.tflite
 │   │   │   keypoint_classifier_v4.hdf5
 │   │   │   keypoint_classifier_v4.tflite
-│   │   │   keypoint_v2.csv
-│   │   │   keypoint_v3.csv
 │   │   └─   keypoint_v4.csv
 │   │           
 │   └─point_history_classifier
@@ -125,6 +116,7 @@ Hand sign recognition and finger gesture recognition can add and change training
 
 ### Hand sign recognition training
 #### 1.Learning data collection
+#### 1.1. Manual data collection
 Press "k" to enter the mode to save key points（displayed as 「MODE:Logging Key Point」）<br>
 <img src="https://user-images.githubusercontent.com/37477845/102235423-aa6cb680-3f35-11eb-8ebd-5d823e211447.jpg" width="60%"><br><br>
 If you press "0" to "9", the key points will be added to "model/keypoint_classifier/keypoint.csv" as shown below.<br>
@@ -133,13 +125,17 @@ If you press "0" to "9", the key points will be added to "model/keypoint_classif
 The key point coordinates are the ones that have undergone the following preprocessing up to ④.<br>
 <img src="https://user-images.githubusercontent.com/37477845/102242918-ed328c80-3f3d-11eb-907c-61ba05678d54.png" width="80%">
 <img src="https://user-images.githubusercontent.com/37477845/102244114-418a3c00-3f3f-11eb-8eef-f658e5aa2d0d.png" width="80%"><br><br>
-In the initial state, three types of learning data are included: open hand (class ID: 0), close hand (class ID: 1), and pointing (class ID: 2).<br>
+In the initial state, five types of learning data are included: stop (class ID: 0), cut (class ID: 1), space (class ID: 2), delete (class ID: 3) and write (class ID: 4).<br>
 If necessary, add 3 or later, or delete the existing data of csv to prepare the training data.<br>
 <img src="https://user-images.githubusercontent.com/37477845/102348846-d0519400-3fe5-11eb-8789-2e7daec65751.jpg" width="25%">　<img src="https://user-images.githubusercontent.com/37477845/102348855-d2b3ee00-3fe5-11eb-9c6d-b8924092a6d8.jpg" width="25%">　<img src="https://user-images.githubusercontent.com/37477845/102348861-d3e51b00-3fe5-11eb-8b07-adc08a48a760.jpg" width="25%">
 
+#### 1.2. Auto data collection
+We use [asl_alphabet_train](https://www.kaggle.com/datasets/grassknoted/asl-alphabet?select=asl_alphabet_train) to generate keypoint.
+After downloading dataset, you can run [agument_image_for_keypoint_classification.py](agument_image_for_keypoint_classification.py) to generate rotated image (*Note: change list_data to the types of pose hand).
+Then run [create_train_data_for_keypoint_classification_from_image.py](create_train_data_for_keypoint_classification_from_image.py) to generate keypoint data to recognize pose hand.
 #### 2.Model training
 Open "[keypoint_classification.ipynb](keypoint_classification.ipynb)" in Jupyter Notebook and execute from top to bottom.<br>
-To change the number of training data classes, change the value of "NUM_CLASSES = 3" <br>and modify the label of "model/keypoint_classifier/keypoint_classifier_label.csv" as appropriate.<br><br>
+To change the number of training data classes, change the value of "NUM_CLASSES = 5" <br>and modify the label of "model/keypoint_classifier/keypoint_classifier_label.csv" as appropriate.<br><br>
 
 #### X.Model structure
 The image of the model prepared in "[keypoint_classification.ipynb](keypoint_classification.ipynb)" is as follows.
