@@ -27,8 +27,8 @@ python app.py
 
 The following options can be specified when running the demo.
 * --device<br>Specifying the camera device number (Default：0)
-* --width<br>Width at the time of camera capture (Default：960)
-* --height<br>Height at the time of camera capture (Default：540)
+* --width<br>Width at the time of camera capture (Default：640)
+* --height<br>Height at the time of camera capture (Default：480)
 * --use_static_image_mode<br>Whether to use static_image_mode option for MediaPipe inference (Default：Unspecified)
 * --min_detection_confidence<br>
 Detection confidence threshold (Default：0.5)
@@ -127,7 +127,12 @@ The key point coordinates are the ones that have undergone the following preproc
 <img src="https://user-images.githubusercontent.com/37477845/102244114-418a3c00-3f3f-11eb-8eef-f658e5aa2d0d.png" width="80%"><br><br>
 In the initial state, five types of learning data are included: stop (class ID: 0), cut (class ID: 1), space (class ID: 2), delete (class ID: 3) and write (class ID: 4).<br>
 If necessary, add 3 or later, or delete the existing data of csv to prepare the training data.<br>
-<img src="https://user-images.githubusercontent.com/37477845/102348846-d0519400-3fe5-11eb-8789-2e7daec65751.jpg" width="25%">　<img src="https://user-images.githubusercontent.com/37477845/102348855-d2b3ee00-3fe5-11eb-9c6d-b8924092a6d8.jpg" width="25%">　<img src="https://user-images.githubusercontent.com/37477845/102348861-d3e51b00-3fe5-11eb-8b07-adc08a48a760.jpg" width="25%">
+<img src="https://github.com/Tkag0001/Air-writing/assets/107709392/0fdc027a-fa18-4e75-8103-ce51a542aced" width="15%">　
+<img src="https://github.com/Tkag0001/Air-writing/assets/107709392/6c786f30-cd7d-4da0-b1e6-b2725bdeaf37" width="15%">　
+<img src="https://github.com/Tkag0001/Air-writing/assets/107709392/95132117-4314-4f45-a38e-402b94461f3d" width="15%">
+<img src="https://github.com/Tkag0001/Air-writing/assets/107709392/33370421-2929-436d-9476-16f824aaa5f1" width="15%">
+<img src="https://github.com/Tkag0001/Air-writing/assets/107709392/7348607c-c453-44d5-b6af-d42d2c90cc3b" width="15%">
+
 
 #### 1.2. Auto data collection
 We use [asl_alphabet_train](https://www.kaggle.com/datasets/grassknoted/asl-alphabet?select=asl_alphabet_train) to generate keypoint.
@@ -167,11 +172,3 @@ The model using "LSTM" is as follows. <br>Please change "use_lstm = False" to "T
 # Reference
 * [MediaPipe](https://mediapipe.dev/)
 
-# Author
-Kazuhito Takahashi(https://twitter.com/KzhtTkhs)
-
-# Translation and other improvements
-Nikita Kiselov(https://github.com/kinivi)
- 
-# License 
-hand-gesture-recognition-using-mediapipe is under [Apache v2 license](LICENSE).
