@@ -17,6 +17,7 @@ class HandwrittenClassifier(object):
         self.input_details = self.interpreter.get_input_details()
         self.output_details = self.interpreter.get_output_details()
         self.input_shape = self.input_details[0]['shape']
+    
     def __call__(
         self,
         image,
