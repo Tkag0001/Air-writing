@@ -33,6 +33,7 @@ save_url = st.sidebar.text_input("URL folder to save:")
 update_url_button = st.sidebar.button("Update url")
 label_img = st.sidebar.text_input("Label:")
 label_button = st.sidebar.button("Label image!")
+upload_labeled_button = st.sidebar.button("Upload labeled data")
 
 # Initialize variables session state
 if 'save_url' not in st.session_state:
@@ -46,7 +47,11 @@ if 'json_path' not in st.session_state:
 if 'board' not in st.session_state:
     st.session_state.board = None
 if 'next_index_img' not in st.session_state:
-    st.session_state.next_index_img = None
+    st.session_state.next_index_img = 0
+if 'data_json' not in st.session_state:
+    st.session_state.data_json = {}
+if 'images' not in st.session_state:
+    st.session_state.images = {}
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -144,9 +149,6 @@ def main():
     #  ########################################################################
     mode = 0
 
-    # Data file json ###########################################################
-    data_json = {}
-
     # Update url #####################################################
     if update_url_button:
         if save_url == "" or save_url == None:
@@ -158,13 +160,13 @@ def main():
             json_path = Path(os.path.join(st.session_state.save_url, 'labels.json'))
             if not json_path.exists():
                 with open(json_path, 'w') as f:
-                    json.dump(data_json, f)
+                    json.dump(st.session_state.data_json, f)
                 logging.info(f"File json {json_path} created successfull")
             else:
                 with open(json_path) as f:
-                    data_json = json.load(f)
+                    st.session_state.data_json = json.load(f)
                     logging.info(f"Load data file json {json_path} successfull")
-                    logging.info(f"Json data: {data_json}")
+                    logging.info(f"Json data: {st.session_state.data_json}")
             st.session_state.json_path = json_path
 
             custom_img = os.listdir(st.session_state.folder_img)
@@ -178,14 +180,28 @@ def main():
     if label_button:
         logging.info(f"Label button: session_state index: {st.session_state.next_index_img}")
         logging.info(f"Json path: {st.session_state.json_path}")
-        img_path = os.path.join(st.session_state.folder_img, f'i{st.session_state.next_index_img}.png')
-        cv.imwrite(img_path, st.session_state.board)
+        # img_path = os.path.join(st.session_state.folder_img, f'i{st.session_state.next_index_img}.png')
+        img_name = f'i{st.session_state.next_index_img}.png'
+        # cv.imwrite(img_path, st.session_state.board)
+        # Add image to list for view
+        st.session_state.images[img_name] = st.session_state.board
         st.session_state.label_img = label_img
-        data_json[f"i{st.session_state.next_index_img}.png"] = st.session_state.label_img
+        st.session_state.data_json[img_name] = st.session_state.label_img
         logging.info(f"data_json[i{st.session_state.next_index_img}.png] = {st.session_state.label_img}")
-        with open(st.session_state.json_path, 'w') as json_file:
-            json.dump(data_json, json_file, indent=4)
+        # with open(st.session_state.json_path, 'w') as json_file:
+        #     json.dump(st.session_state.data_json, json_file, indent=4)
         st.session_state.next_index_img += 1
+
+    if upload_labeled_button:
+        logging.info(f"Upload labeled button")
+        logging.info(f"Upload images")
+        for k in st.session_state.images:
+            img_path = os.path.join(st.session_state.folder_img, k)
+            cv.imwrite(img_path, st.session_state.images[k])
+        with open(st.session_state.json_path, 'w') as json_file:
+            json.dump(st.session_state.data_json, json_file, indent=4)
+        st.session_state.images = {}
+
 
     while True:
         fps = cvFpsCalc.get()
